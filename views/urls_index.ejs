@@ -4,6 +4,13 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <h3>Hey! Welcome to TinyApp! Some urls will be here soon!</h3>
+  <ul>
+    <% for(var url in urls) { %>
+      <li><%= urls[url] + ': ' + url %></li>
+    <% } %>
+  </ul>
+  <div>
+    <a href="https://en.wikipedia.org/wiki/Cat">Shorten a new URL!</a>
+  </div>
 </body>
 </html>
