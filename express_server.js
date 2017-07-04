@@ -1,3 +1,5 @@
+//tinyAppProject/express_server.js
+
 var express = require("express");
 var app = express();
 var PORT = process.env.PORT || 8080; // default port 8080
@@ -20,12 +22,12 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase }; //variables we can access in urls_index
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, urls: urlDatabase };
+  let templateVars = { shortURL: req.params.id, urls: urlDatabase }; //variables we can access in urls_show
   res.render("urls_show", templateVars);
 });
 
