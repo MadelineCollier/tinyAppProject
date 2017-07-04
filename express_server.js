@@ -46,8 +46,12 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // debug statement to see POST parameters
+  console.log(req.body.longURL);  // debug statement to see POST parameters
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  // store the long url from the form (urls/new)
+  // generate a short url using generateRandomString, and store that
+  // urlDatabase[urlgenerated] = long url from form
+  // redirect to urls/shorturl(id)
 });
 
 app.listen(PORT, () => {
