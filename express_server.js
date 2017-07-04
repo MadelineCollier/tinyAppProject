@@ -19,8 +19,8 @@ app.get("/", (req, res) => {
   res.end("Hello!");
 });
 
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
 });
 
 app.get("/urls", (req, res) => {
@@ -39,6 +39,10 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+});
+
+app.get("/hello", (req, res) => {
+  res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.post("/urls", (req, res) => {
