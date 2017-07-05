@@ -29,7 +29,6 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  let templateVars = { urls: urlDatabase }; //variables we can access in urls_index
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
