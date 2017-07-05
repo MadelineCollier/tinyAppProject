@@ -15,43 +15,58 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
+
+
+//greetings!
 app.get("/", (req, res) => {
   res.end("Hello!");
 });
 
+//page which presents the form which allows you to shorten a new url
+//(the actual functionality of shortening is in a different routing)
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//hey jason
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+//page which presents the full list of urls present in the urlDatabase at present time
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase }; //variables we can access in urls_index
+  let templateVars = { urls: urlDatabase }; //variables we can access in urls_index template
   res.render("urls_index", templateVars);
 });
 
+//deletes a given long/shortURL pair from the urlDatabase
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
 
+//id specific page for each short url
+//now also allows for user to update (explained in next routing, below)
 app.get("/urls/:id", (req, res) => {
   let templateVars = { shortURL: req.params.id, urls: urlDatabase }; //variables we can access in urls_show
   res.render("urls_show", templateVars);
 });
 
+//resets a given short url to link to a new/different long url
 app.post("/urls/:id", (req, res) => {
   let longURL = addProtocol(req.body.longURL);
   urlDatabase[req.params.id] = longURL;
   res.redirect("/urls");
 });
 
+//hey there
 app.get("/hello", (req, res) => {
   res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+
+//creates a new short url for a given long url, and stores these in urlDatabase
 app.post("/urls", (req, res) => {
   let longURL = addProtocol(req.body.longURL);         // store the long url from the form (urls/new)
   const shortURL = generateRandomString();  // generate a short url using our function, and store it
@@ -59,11 +74,13 @@ app.post("/urls", (req, res) => {
   res.redirect(`urls/${shortURL}`);         // redirect to urls/shorturl(id)
 });
 
+//redirects users from short url to long (actual) url
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
+//listen up, pal
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -75,7 +92,7 @@ const addProtocol = (givenURL) => {
   return givenURL;
 }
 
-
+//used to generate our short urls randomly
 const generateRandomString = () => {
   return Math.random().toString(36).substr(2,6);
 };
