@@ -35,6 +35,12 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+app.post("/login", (req, res) => {
+  let username = req.body.username;
+  res.cookie("username", username);
+  res.redirect("/urls");
+});
+
 //page which presents the full list of urls present in the urlDatabase at present time
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase }; //variables we can access in urls_index template
