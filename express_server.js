@@ -23,6 +23,10 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase }; //variables we can access in urls_index
   res.render("urls_index", templateVars);
@@ -38,8 +42,10 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+app.post("/urls/:id", (req, res) => {
+  let longURL = addProtocol(req.body.longURL);
+  urlDatabase[req.params.id] = longURL;
+  res.redirect("/urls");
 });
 
 app.get("/hello", (req, res) => {
@@ -47,9 +53,8 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let longURL = req.body.longURL;         // store the long url from the form (urls/new)
+  let longURL = addProtocol(req.body.longURL);         // store the long url from the form (urls/new)
   const shortURL = generateRandomString();  // generate a short url using our function, and store it
-  if (longURL !== /^https?:\/\//) { longURL = `https:${longURL}`}; //fixes a bug, where https sites need their protocol in order to link
   urlDatabase[shortURL] = longURL;          // add our "consts" into the urlDatabase object as a new key value pair
   res.redirect(`urls/${shortURL}`);         // redirect to urls/shorturl(id)
 });
@@ -64,6 +69,11 @@ app.listen(PORT, () => {
 });
 
 
+//fixes a bug, where https sites need their protocol in order to link properly
+const addProtocol = (givenURL) => {
+  if (givenURL !== /^https?:\/\//) { givenURL = `https:${longURL}`};
+  return givenURL;
+}
 
 
 const generateRandomString = () => {
