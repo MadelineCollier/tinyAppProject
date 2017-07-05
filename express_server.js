@@ -27,7 +27,8 @@ app.get("/", (req, res) => {
 //page which presents the form which allows you to shorten a new url
 //(the actual functionality of shortening is in a different routing)
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
 });
 
 //hey jason
@@ -35,15 +36,23 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+//creates a cookie once the header's login form is filled out
 app.post("/login", (req, res) => {
   let username = req.body.username;
   res.cookie("username", username);
   res.redirect("/urls");
 });
 
+// //deletes the cookie (effectively loggin out the user)
+// app.post("/login", (req, res) => {
+//   let username = req.body.username;
+//   res.cookie("username", username);
+//   res.redirect("/urls");
+// });
+
 //page which presents the full list of urls present in the urlDatabase at present time
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase }; //variables we can access in urls_index template
+  let templateVars = { username: req.cookies["username"], urls: urlDatabase }; //variables we can access in urls_index template
   res.render("urls_index", templateVars);
 });
 
@@ -56,7 +65,7 @@ app.post("/urls/:id/delete", (req, res) => {
 //id specific page for each short url
 //now also allows for user to update (explained in next routing, below)
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, urls: urlDatabase }; //variables we can access in urls_show
+  let templateVars = { shortURL: req.params.id, username: req.cookies["username"], urls: urlDatabase }; //variables we can access in urls_show
   res.render("urls_show", templateVars);
 });
 
