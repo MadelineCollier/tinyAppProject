@@ -44,11 +44,10 @@ app.post("/login", (req, res) => {
 });
 
 // //deletes the cookie (effectively loggin out the user)
-// app.post("/login", (req, res) => {
-//   let username = req.body.username;
-//   res.cookie("username", username);
-//   res.redirect("/urls");
-// });
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
 
 //page which presents the full list of urls present in the urlDatabase at present time
 app.get("/urls", (req, res) => {
