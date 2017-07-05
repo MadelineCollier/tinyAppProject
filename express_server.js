@@ -28,6 +28,12 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  let templateVars = { urls: urlDatabase }; //variables we can access in urls_index
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls");
+});
+
 app.get("/urls/:id", (req, res) => {
   let templateVars = { shortURL: req.params.id, urls: urlDatabase }; //variables we can access in urls_show
   res.render("urls_show", templateVars);

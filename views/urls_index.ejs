@@ -12,6 +12,9 @@
   <ul>
     <% for(var url in urls) { %>
       <li><%= urls[url] + ': ' + url %></li>
+      <form method="POST" action="/urls/<%= url %>/delete">
+        <button type="submit">Delete This URL</button>
+      </form>
     <% } %>
   </ul>
   <div>
