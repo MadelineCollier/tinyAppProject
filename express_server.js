@@ -37,21 +37,15 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
 app.get("/hello", (req, res) => {
   res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body.longURL);  // debug statement to see POST parameters
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-  // store the long url from the form (urls/new)
-  // generate a short url using generateRandomString, and store that
-  // urlDatabase[urlgenerated] = long url from form
-  // redirect to urls/shorturl(id)
+  const longURL = req.body.longURL;         // store the long url from the form (urls/new)
+  const shortURL = generateRandomString();  // generate a short url using our function, and store it
+  urlDatabase[shortURL] = longURL;          // add our "consts" into the urlDatabase object as a new key value pair
+  res.redirect(`urls/${shortURL}`);         // redirect to urls/shorturl(id)
 });
 
 app.listen(PORT, () => {
