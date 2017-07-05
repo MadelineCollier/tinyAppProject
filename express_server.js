@@ -42,8 +42,9 @@ app.get("/hello", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const longURL = req.body.longURL;         // store the long url from the form (urls/new)
+  let longURL = req.body.longURL;         // store the long url from the form (urls/new)
   const shortURL = generateRandomString();  // generate a short url using our function, and store it
+  if (longURL !== /^https?:\/\//) { longURL = `https:${longURL}`}; //fixes a bug, where https sites need their protocol in order to link
   urlDatabase[shortURL] = longURL;          // add our "consts" into the urlDatabase object as a new key value pair
   res.redirect(`urls/${shortURL}`);         // redirect to urls/shorturl(id)
 });
