@@ -15,10 +15,11 @@
       <form method="POST" action="/urls/<%= url %>/delete">
         <button type="submit">Delete This URL</button>
       </form>
+      <a href="/urls/<%= url %>">Edit This URL</a>
     <% } %>
   </ul>
   <div>
-    <a href="https://en.wikipedia.org/wiki/Cat">Shorten a new URL!</a>
+    <a href="/urls/new">Shorten a new URL!</a>
   </div>
 </body>
 </html>
