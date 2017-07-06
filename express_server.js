@@ -126,11 +126,15 @@ app.get("/", (req, res) => {
 });
 
 
-//page which presents the form allowing you to shorten a new url
-//(the actual functionality of shortening is in a different routing)
+//page which presents the form for shortening a new url
+//if user is not logged in, they are redirected to /login
 app.get("/urls/new", (req, res) => {
   let userEmail = getUserEmailById(req.cookies["user_id"]);
   let templateVars = { userEmail: userEmail };
+  if (templateVars.userEmail === undefined) {
+    res.redirect("/login");
+    return;
+  }
   res.render("urls_new", templateVars);
 });
 
