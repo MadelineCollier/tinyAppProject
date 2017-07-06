@@ -157,6 +157,14 @@ app.post("/login", (req, res) => {
 });
 
 
+//page which presents the login form
+app.get("/login", (req, res) => {
+  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let templateVars = { userEmail: userEmail };
+  res.render("login", templateVars);
+});
+
+
 // //deletes the cookie (effectively loggin out the user)
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
