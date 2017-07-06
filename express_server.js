@@ -50,7 +50,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "fuq"
   },
 };
 
@@ -213,14 +213,18 @@ app.post("/logout", (req, res) => {
 //page which presents the full list of urls present in the urlDatabase at present time
 app.get("/urls", (req, res) => {
   let userEmail = getUserEmailById(req.cookies["user_id"]);
-  let templateVars = { userEmail: userEmail, urls: urlDatabase }; //variables we can access in urls_index template
+  let templateVars = {
+  userEmail: userEmail,
+  urls: urlDatabase,
+  cookieID: req.cookies["user_id"],
+  }; //variables we can access in urls_index template
   res.render("urls_index", templateVars);
 });
 
 
 //deletes a given long/shortURL pair from the urlDatabase
 app.post("/urls/:id/delete", (req, res) => {
-  if (urlDatabase[req.params.id].id === req.cookies["user_id"]) {
+  if (urlDatabase[req.params.id].user_id === req.cookies["user_id"]) {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
   } else {
@@ -244,7 +248,7 @@ app.get("/urls/:id", (req, res) => {
 
 //resets a given short url to link to a new/different long url
 app.post("/urls/:id", (req, res) => {
-  if (urlDatabase[req.params.id].id === req.cookies["user_id"]) {
+  if (urlDatabase[req.params.id].user_id === req.cookies["user_id"]) {
   let longURL = addProtocol(req.body.longURL);
   urlDatabase[req.params.id].url = longURL;
   res.redirect("/urls");
@@ -267,8 +271,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = {
     url: longURL,
     user_id: req.cookies["user_id"],
-  }
-  console.log(urlDatabase);                                            // add info into the urlDatabase object as a new key value pair
+  }                                         // add info into the urlDatabase object as a new key value pair
   res.redirect(`urls/${shortURL}`);             // redirect to urls/shorturl(id)
 });
 
