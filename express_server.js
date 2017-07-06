@@ -36,6 +36,12 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+//page with form for registering a new user
+app.get("/register", (req, res) => {
+  let templateVars = { username: req.cookies["username"] };
+  res.render("register", templateVars);
+});
+
 //creates a cookie once the header's login form is filled out
 app.post("/login", (req, res) => {
   let username = req.body.username;
@@ -103,7 +109,7 @@ app.listen(PORT, () => {
 
 //fixes a bug, where https sites need their protocol in order to link properly
 const addProtocol = (givenURL) => {
-  if (givenURL !== /^https?:\/\//) { givenURL = `https:${longURL}`};
+  if (!/https?:\/\//.test(givenURL)) { givenURL = `https:${givenURL}`};
   return givenURL;
 }
 
