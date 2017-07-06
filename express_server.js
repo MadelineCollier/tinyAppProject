@@ -1,5 +1,15 @@
 //tinyAppProject/express_server.js
 
+
+
+
+
+//REQUIREMENTS SECTION...
+
+
+
+
+
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
@@ -9,6 +19,14 @@ const cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true})); //allows us to access POST request parameters
 app.use(cookieParser());
 app.set("view engine", "ejs"); //tells the express app to use EJS as its templating engine
+
+
+
+
+
+//GLOBAL OBJECTS/VARS SECTION...
+
+
 
 
 
@@ -34,117 +52,29 @@ const users = {
 };
 
 
-//greetings!
-app.get("/", (req, res) => {
-  res.end("Hello!");
-});
 
-//page which presents the form allowing you to shorten a new url
-//(the actual functionality of shortening is in a different routing)
-app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"] };
-  res.render("urls_new", templateVars);
-});
 
-//hey jason
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
 
-//page with form for registering a new user
-app.get("/register", (req, res) => {
-  let templateVars = { username: req.cookies["username"] };
-  res.render("register", templateVars);
-});
+//FUNCTIONS SECTION...
 
-//creates a new user in the global userobject (if the form is filled correctly)
-app.post("/register", (req, res) => {
-  if (checkUserEmail(req.body.email)) {
-    res.status(400).send('Email already exists');
-  } else if (req.body.email && req.body.password) {
-  let newUser = {
-    id: generateRandomString(),
-    email: req.body.email,
-    password: req.body.password
-  };
-  users[newUser.id] = newUser;
-  res.cookie("user_id", newUser.id);
-  console.log(users);
-  res.redirect("/urls");
-  } else {
-    res.status(400).send('Both password and email fields must be filled out');
-  }
-});
 
-//creates a cookie once the header's login form is filled out
-app.post("/login", (req, res) => {
-  let username = req.body.username;
-  res.cookie("username", username);
-  res.redirect("/urls");
-});
 
-// //deletes the cookie (effectively loggin out the user)
-app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect("/urls");
-});
 
-//page which presents the full list of urls present in the urlDatabase at present time
-app.get("/urls", (req, res) => {
-  let templateVars = { username: req.cookies["username"], urls: urlDatabase }; //variables we can access in urls_index template
-  res.render("urls_index", templateVars);
-});
 
-//deletes a given long/shortURL pair from the urlDatabase
-app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
-});
-
-//id specific page for each short url
-//now also allows for user to update (explained in next routing, below)
-app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, username: req.cookies["username"], urls: urlDatabase }; //variables we can access in urls_show
-  res.render("urls_show", templateVars);
-});
-
-//resets a given short url to link to a new/different long url
-app.post("/urls/:id", (req, res) => {
-  let longURL = addProtocol(req.body.longURL);
-  urlDatabase[req.params.id] = longURL;
-  res.redirect("/urls");
-});
-
-//hey there
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-//creates a new short url for a given long url, and stores these in urlDatabase
-app.post("/urls", (req, res) => {
-  let longURL = addProtocol(req.body.longURL);  // store the long url from the form (urls/new)
-  const shortURL = generateRandomString();      // generate a short url using our function, and store it
-  urlDatabase[shortURL] = longURL;              // add our "consts" into the urlDatabase object as a new key value pair
-  res.redirect(`urls/${shortURL}`);             // redirect to urls/shorturl(id)
-});
-
-//redirects users from short url to long (actual) url
-app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
-
-//listen up, pal
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
+//gets a userEmail by the id, returns null if user id not found
+const getUserEmailById = (userID) => {
+  let user = users[userID];
+    if (!user) {
+      return;
+    }
+  return user.email;
+};
 
 //fixes a bug, where https sites need their protocol in order to link properly
 const addProtocol = (givenURL) => {
   if (!/https?:\/\//.test(givenURL)) { givenURL = `https:${givenURL}`};
   return givenURL;
-}
+};
 
 //used to generate our short urls randomly
 const generateRandomString = () => {
@@ -160,4 +90,140 @@ const checkUserEmail = (givenEmail) => {
   }
   return false;
 };
+
+
+
+
+
+//ROUTING SECTION...
+
+
+
+
+
+//greetings!
+app.get("/", (req, res) => {
+  res.end("Hello!");
+});
+
+
+//page which presents the form allowing you to shorten a new url
+//(the actual functionality of shortening is in a different routing)
+app.get("/urls/new", (req, res) => {
+  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let templateVars = { userEmail: userEmail };
+  res.render("urls_new", templateVars);
+});
+
+
+//hey jason
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+
+//page with form for registering a new user
+app.get("/register", (req, res) => {
+  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let templateVars = { userEmail: userEmail };
+  res.render("register", templateVars);
+});
+
+
+//creates a new user in the global userobject (if the form is filled correctly)
+app.post("/register", (req, res) => {
+  if (checkUserEmail(req.body.email)) {
+    res.status(400).send('Email already exists');
+  } else if (req.body.email && req.body.password) {
+  let newUser = {
+    id: generateRandomString(),
+    email: req.body.email,
+    password: req.body.password
+  };
+  users[newUser.id] = newUser;
+  res.cookie("user_id", newUser.id);
+  res.redirect("/urls");
+  } else {
+    res.status(400).send('Both password and email fields must be filled out');
+  }
+});
+
+
+//creates a cookie once the header's login form is filled out
+app.post("/login", (req, res) => {
+  let username = req.body.username;
+  res.cookie("username", username);
+  res.redirect("/urls");
+});
+
+
+// //deletes the cookie (effectively loggin out the user)
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
+
+//page which presents the full list of urls present in the urlDatabase at present time
+app.get("/urls", (req, res) => {
+  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let templateVars = { userEmail: userEmail, urls: urlDatabase }; //variables we can access in urls_index template
+  res.render("urls_index", templateVars);
+});
+
+
+//deletes a given long/shortURL pair from the urlDatabase
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls");
+});
+
+
+//id specific page for each short url
+//now also allows for user to update (explained in next routing, below)
+app.get("/urls/:id", (req, res) => {
+  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let templateVars = {
+    userEmail: userEmail,
+    urls: urlDatabase,
+    shortURL: req.params.id
+  }; //variables we can access in urls_show
+  res.render("urls_show", templateVars);
+});
+
+
+//resets a given short url to link to a new/different long url
+app.post("/urls/:id", (req, res) => {
+  let longURL = addProtocol(req.body.longURL);
+  urlDatabase[req.params.id] = longURL;
+  res.redirect("/urls");
+});
+
+
+//hey there
+app.get("/hello", (req, res) => {
+  res.end("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+
+//creates a new short url for a given long url, and stores these in urlDatabase
+app.post("/urls", (req, res) => {
+  let longURL = addProtocol(req.body.longURL);  // store the long url from the form (urls/new)
+  const shortURL = generateRandomString();      // generate a short url using our function, and store it
+  urlDatabase[shortURL] = longURL;              // add our "consts" into the urlDatabase object as a new key value pair
+  res.redirect(`urls/${shortURL}`);             // redirect to urls/shorturl(id)
+});
+
+
+//redirects users from short url to long (actual) url
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
+
+//listen up, pal
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
 
