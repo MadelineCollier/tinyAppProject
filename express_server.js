@@ -57,6 +57,19 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+//creates a new user in the global userobject
+app.post("/register", (req, res) => {
+  let newUser = {
+    id: generateRandomString(),
+    email: req.body.email,
+    password: req.body.password
+  };
+  users[newUser.id] = newUser;
+  res.cookie("user_id", newUser.id);
+  console.log(users);
+  res.redirect("/urls");
+});
+
 //creates a cookie once the header's login form is filled out
 app.post("/login", (req, res) => {
   let username = req.body.username;
@@ -101,13 +114,12 @@ app.get("/hello", (req, res) => {
   res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-
 //creates a new short url for a given long url, and stores these in urlDatabase
 app.post("/urls", (req, res) => {
-  let longURL = addProtocol(req.body.longURL);         // store the long url from the form (urls/new)
-  const shortURL = generateRandomString();  // generate a short url using our function, and store it
-  urlDatabase[shortURL] = longURL;          // add our "consts" into the urlDatabase object as a new key value pair
-  res.redirect(`urls/${shortURL}`);         // redirect to urls/shorturl(id)
+  let longURL = addProtocol(req.body.longURL);  // store the long url from the form (urls/new)
+  const shortURL = generateRandomString();      // generate a short url using our function, and store it
+  urlDatabase[shortURL] = longURL;              // add our "consts" into the urlDatabase object as a new key value pair
+  res.redirect(`urls/${shortURL}`);             // redirect to urls/shorturl(id)
 });
 
 //redirects users from short url to long (actual) url
