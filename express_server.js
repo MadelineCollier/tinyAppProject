@@ -70,6 +70,17 @@ const getUserEmailById = (userID) => {
   return user.email;
 };
 
+//gets a userID by the email
+const getIdByEmail = (givenEmail) => {
+  let id = undefined;
+  for(user in users) {
+    if (users[user].email === givenEmail) {
+      id = user;
+    }
+  }
+  return id;
+};
+
 //fixes a bug, where https sites need their protocol in order to link properly
 const addProtocol = (givenURL) => {
   if (!/https?:\/\//.test(givenURL)) { givenURL = `https:${givenURL}`};
@@ -87,6 +98,14 @@ const checkUserEmail = (givenEmail) => {
     if (users[user].email === givenEmail) {
       return true;
     }
+  }
+  return false;
+};
+
+//checks to see if password and email match in our global users object
+const checkPassword = (givenEmail, givenPass) => {
+  if (users[getIdByEmail(givenEmail)].password === givenPass) {
+    return true;
   }
   return false;
 };
@@ -134,6 +153,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   if (checkUserEmail(req.body.email)) {
     res.status(400).send('Email already exists');
+    return;
   } else if (req.body.email && req.body.password) {
   let newUser = {
     id: generateRandomString(),
@@ -149,19 +169,30 @@ app.post("/register", (req, res) => {
 });
 
 
-//creates a cookie once the header's login form is filled out
-app.post("/login", (req, res) => {
-  let username = req.body.username;
-  res.cookie("username", username);
-  res.redirect("/urls");
-});
-
-
 //page which presents the login form
 app.get("/login", (req, res) => {
   let userEmail = getUserEmailById(req.cookies["user_id"]);
   let templateVars = { userEmail: userEmail };
   res.render("login", templateVars);
+});
+
+
+//creates user_id cookie once the login form is filled out
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const id = getIdByEmail(email);
+
+  if (!checkUserEmail(email)) {
+    res.status(403).send('Sorry, email or password incorrect');
+    return;
+  } else if (!checkPassword(email, password)) {
+    res.status(403).send('Sorry, email or password incorrect');
+    return;
+  } else {
+    res.cookie("user_id", id);
+    res.redirect("/");
+  }
 });
 
 
