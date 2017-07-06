@@ -220,8 +220,12 @@ app.get("/urls", (req, res) => {
 
 //deletes a given long/shortURL pair from the urlDatabase
 app.post("/urls/:id/delete", (req, res) => {
+  if (urlDatabase[req.params.id].id === req.cookies["user_id"]) {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
+  } else {
+    res.status(400).send('You do not have permission to delete that URL');
+  }
 });
 
 
@@ -240,9 +244,13 @@ app.get("/urls/:id", (req, res) => {
 
 //resets a given short url to link to a new/different long url
 app.post("/urls/:id", (req, res) => {
+  if (urlDatabase[req.params.id].id === req.cookies["user_id"]) {
   let longURL = addProtocol(req.body.longURL);
   urlDatabase[req.params.id].url = longURL;
   res.redirect("/urls");
+  } else {
+    res.status(400).send('You do not have permission to edit that URL');
+  }
 });
 
 
