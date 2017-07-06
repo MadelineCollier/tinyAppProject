@@ -57,8 +57,11 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
-//creates a new user in the global userobject
+//creates a new user in the global userobject (if the form is filled correctly)
 app.post("/register", (req, res) => {
+  if (checkUserEmail(req.body.email)) {
+    res.status(400).send('Email already exists');
+  } else if (req.body.email && req.body.password) {
   let newUser = {
     id: generateRandomString(),
     email: req.body.email,
@@ -68,6 +71,9 @@ app.post("/register", (req, res) => {
   res.cookie("user_id", newUser.id);
   console.log(users);
   res.redirect("/urls");
+  } else {
+    res.status(400).send('Both password and email fields must be filled out');
+  }
 });
 
 //creates a cookie once the header's login form is filled out
@@ -145,4 +151,13 @@ const generateRandomString = () => {
   return Math.random().toString(36).substr(2,6);
 };
 
+//checks to see if an email already exists in our global users object
+const checkUserEmail = (givenEmail) => {
+  for(user in users) {
+    if (users[user].email === givenEmail) {
+      return true;
+    }
+  }
+  return false;
+};
 
