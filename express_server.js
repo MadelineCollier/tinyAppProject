@@ -11,12 +11,27 @@ app.use(cookieParser());
 app.set("view engine", "ejs"); //tells the express app to use EJS as its templating engine
 
 
+
+//object with list of shortened urls
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
 
+//object with user info
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
 
 
 //greetings!
@@ -24,7 +39,7 @@ app.get("/", (req, res) => {
   res.end("Hello!");
 });
 
-//page which presents the form which allows you to shorten a new url
+//page which presents the form allowing you to shorten a new url
 //(the actual functionality of shortening is in a different routing)
 app.get("/urls/new", (req, res) => {
   let templateVars = { username: req.cookies["username"] };
