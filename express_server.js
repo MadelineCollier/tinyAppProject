@@ -32,9 +32,17 @@ app.set("view engine", "ejs"); //tells the express app to use EJS as its templat
 
 //object with list of shortened urls
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    url: "http://www.lighthouselabs.ca",
+    user_id: "userRandomID"
+  },
+  "9sm5xK": {
+    url: "http://www.google.com",
+    user_id: "userRandomID"
+  },
 };
+
+
 
 
 //object with user info
@@ -44,11 +52,6 @@ const users = {
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
 };
 
 
@@ -238,7 +241,7 @@ app.get("/urls/:id", (req, res) => {
 //resets a given short url to link to a new/different long url
 app.post("/urls/:id", (req, res) => {
   let longURL = addProtocol(req.body.longURL);
-  urlDatabase[req.params.id] = longURL;
+  urlDatabase[req.params.id].url = longURL;
   res.redirect("/urls");
 });
 
@@ -253,14 +256,18 @@ app.get("/hello", (req, res) => {
 app.post("/urls", (req, res) => {
   let longURL = addProtocol(req.body.longURL);  // store the long url from the form (urls/new)
   const shortURL = generateRandomString();      // generate a short url using our function, and store it
-  urlDatabase[shortURL] = longURL;              // add our "consts" into the urlDatabase object as a new key value pair
+  urlDatabase[shortURL] = {
+    url: longURL,
+    user_id: req.cookies["user_id"],
+  }
+  console.log(urlDatabase);                                            // add info into the urlDatabase object as a new key value pair
   res.redirect(`urls/${shortURL}`);             // redirect to urls/shorturl(id)
 });
 
 
 //redirects users from short url to long (actual) url
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].url;
   res.redirect(longURL);
 });
 
