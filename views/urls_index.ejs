@@ -11,13 +11,11 @@
   </header>
   <ul>
     <% for (var url in urls) { %>
-      <% if (urls[url].user_id === cookieID) { %>
         <li><%= `${urls[url].url}: ${url}` %></li>
         <form method="POST" action="/urls/<%= url %>/delete">
           <button type="submit">Delete This URL</button>
         </form>
         <a href="/urls/<%= url %>">Edit This URL</a>
-      <% } %>
     <% } %>
   </ul>
   <div>

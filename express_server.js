@@ -113,6 +113,17 @@ const checkPassword = (givenEmail, givenPass) => {
   return false;
 };
 
+//creates a custom list of urls to display, based on the given user id
+const urlsForUser = (givenId) => {
+  const output = {};
+  for (url in urlDatabase) {
+    if (urlDatabase[url].user_id === givenId) {
+      output[url] = urlDatabase[url];
+    }
+  }
+  return output;
+};
+
 
 
 
