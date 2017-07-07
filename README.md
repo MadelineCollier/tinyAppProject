@@ -4,7 +4,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Our registration page"](#)
+!["Our registration page"](https://github.com/MadelineCollier/tinyAppProject/blob/master/docs/Screen%20Shot%202017-07-07%20at%2011.54.13%20AM.png?raw=true)
 !["Our login page"](#)
 !["A homepage, featuring a list of URLs belonging to whichever user is logged in."](#)
 !["The editing page for a particular short URL, in this case b2xVn2. On this page, the user can reassign b2xVn2 so that it links to a new long URL"](#)
