@@ -86,8 +86,14 @@ const getIdByEmail = (givenEmail) => {
 
 //fixes a bug, where https sites need their protocol in order to link properly
 const addProtocol = (givenURL) => {
-  if (!/https?:\/\//.test(givenURL)) { givenURL = `https:${givenURL}`};
-  return givenURL;
+  let newUrl = givenURL;
+  if (!/https?:\/\//.test(givenURL)) {
+    if (!/www\./.test(givenURL)) {
+      newUrl = `www.${newUrl}`
+    }
+    newUrl = `https://${newUrl}`
+  };
+  return newUrl;
 };
 
 //used to generate our short urls randomly
