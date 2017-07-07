@@ -9,10 +9,17 @@
   <header>
       <% include ./partials/_header %>
   </header>
+    <% if (urls[shortURL].user_id === cookieID) { %>
     <h2><%= "ShortURL" + ": " + shortURL %></h2>
-    <form action="" method="POST">
-      <input id="longURL" type="text" name="longURL" value="<%= urls[shortURL].url %>" style="width: 300px">
-      <input type="submit" value="Update">
-    </form>
+      <form action="" method="POST">
+        <input id="longURL" type="text" name="longURL" value="<%= urls[shortURL].url %>" style="width: 300px">
+        <input type="submit" value="Update">
+      </form>
+    <% } else { %>
+      <h4>Sorry, you do not have permission to view this page</h4>
+      <% if (!cookieID) { %>
+      <h4><i>Please Log In<i></h4>
+      <% } %>
+    <% } %>
 </body>
 </html>

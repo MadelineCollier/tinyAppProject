@@ -240,7 +240,8 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     userEmail: userEmail,
     urls: urlDatabase,
-    shortURL: req.params.id
+    shortURL: req.params.id,
+    cookieID: req.cookies["user_id"],
   }; //variables we can access in urls_show
   res.render("urls_show", templateVars);
 });
