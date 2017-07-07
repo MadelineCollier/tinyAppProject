@@ -14,11 +14,14 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true})); //allows us to access POST request parameters
-app.use(cookieParser());
+app.use(cookieSession({
+  user_id: 'session',
+  keys: ['doggos', 'bork'],
+}));
 app.set("view engine", "ejs"); //tells the express app to use EJS as its templating engine
 
 
@@ -150,7 +153,7 @@ app.get("/", (req, res) => {
 //page which presents the form for shortening a new url
 //if user is not logged in, they are redirected to /login
 app.get("/urls/new", (req, res) => {
-  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let userEmail = getUserEmailById(req.session.user_id);
   let templateVars = { userEmail: userEmail };
   if (templateVars.userEmail === undefined) {
     res.redirect("/login");
@@ -168,7 +171,7 @@ app.get("/urls.json", (req, res) => {
 
 //page with form for registering a new user
 app.get("/register", (req, res) => {
-  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let userEmail = getUserEmailById(req.session.user_id);
   let templateVars = { userEmail: userEmail };
   res.render("register", templateVars);
 });
@@ -186,7 +189,7 @@ app.post("/register", (req, res) => {
     password: bcrypt.hashSync(req.body.password, 10),
   };
   users[newUser.id] = newUser;
-  res.cookie("user_id", newUser.id);
+  req.session.user_id = newUser.id;
   res.redirect("/urls");
   return;
   } else {
@@ -197,13 +200,13 @@ app.post("/register", (req, res) => {
 
 //page which presents the login form
 app.get("/login", (req, res) => {
-  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let userEmail = getUserEmailById(req.session.user_id);
   let templateVars = { userEmail: userEmail };
   res.render("login", templateVars);
 });
 
 
-//creates user_id cookie once the login form is filled out
+//creates user_id session once the login form is filled out
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -216,25 +219,25 @@ app.post("/login", (req, res) => {
     res.status(403).send('Sorry, email or password incorrect');
     return;
   } else {
-    res.cookie("user_id", id);
+    req.session.user_id = id;
     res.redirect("/urls");
   }
 });
 
 
-// //deletes the cookie (effectively loggin out the user)
+// //deletes the user_id session (effectively loggin out the user)
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
 
 //page which presents the full list of urls present in the urlDatabase at present time
 app.get("/urls", (req, res) => {
-  let userEmail = getUserEmailById(req.cookies["user_id"]);
+  let userEmail = getUserEmailById(req.session.user_id);
   let templateVars = {
   userEmail: userEmail,
-  urls: urlsForUser(req.cookies["user_id"]),
+  urls: urlsForUser(req.session.user_id),
   }; //variables we can access in urls_index template
   res.render("urls_index", templateVars);
 });
@@ -242,7 +245,7 @@ app.get("/urls", (req, res) => {
 
 //deletes a given long/shortURL pair from the urlDatabase
 app.post("/urls/:id/delete", (req, res) => {
-  if (urlDatabase[req.params.id].user_id === req.cookies["user_id"]) {
+  if (urlDatabase[req.params.id].user_id === req.session.user_id) {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
   return;
@@ -255,12 +258,11 @@ app.post("/urls/:id/delete", (req, res) => {
 //id specific page for each short url
 //now also allows for user to update (explained in next routing, below)
 app.get("/urls/:id", (req, res) => {
-  let userEmail = getUserEmailById(req.cookies["user_id"]);
   let templateVars = {
-    userEmail: userEmail,
+    userEmail: getUserEmailById(req.session.user_id),
     urls: urlDatabase,
     shortURL: req.params.id,
-    cookieID: req.cookies["user_id"],
+    sessionID: req.session.user_id,
   }; //variables we can access in urls_show
   res.render("urls_show", templateVars);
 });
@@ -268,7 +270,7 @@ app.get("/urls/:id", (req, res) => {
 
 //resets a given short url to link to a new/different long url
 app.post("/urls/:id", (req, res) => {
-  if (urlDatabase[req.params.id].user_id === req.cookies["user_id"]) {
+  if (urlDatabase[req.params.id].user_id === req.session.user_id) {
   let longURL = addProtocol(req.body.longURL);
   urlDatabase[req.params.id].url = longURL;
   res.redirect("/urls");
@@ -291,7 +293,7 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();      // generate a short url using our function, and store it
   urlDatabase[shortURL] = {
     url: longURL,
-    user_id: req.cookies["user_id"],
+    user_id: req.session.user_id,
   }                                         // add info into the urlDatabase object as a new key value pair
   res.redirect(`urls/${shortURL}`);             // redirect to urls/shorturl(id)
 });
