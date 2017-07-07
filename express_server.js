@@ -171,9 +171,14 @@ app.get("/urls.json", (req, res) => {
 
 //page which presents the login form
 app.get("/login", (req, res) => {
-  let userEmail = getUserEmailById(req.session.userId);
-  let templateVars = { userEmail: userEmail };
-  res.render("login", templateVars);
+  if (req.session.userId) {
+    res.redirect("/urls");
+    return;
+  } else {
+    let userEmail = getUserEmailById(req.session.userId);
+    let templateVars = { userEmail: userEmail };
+    res.render("login", templateVars);
+  }
 });
 
 
