@@ -51,7 +51,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "foo"
+    password: bcrypt.hashSync("foo", 10)
   },
 };
 
@@ -114,7 +114,7 @@ const checkUserEmail = (givenEmail) => {
 
 //checks to see if password and email match in our global users object
 const checkPassword = (givenEmail, givenPass) => {
-  if (users[getIdByEmail(givenEmail)].password === givenPass) {
+  if (bcrypt.compareSync(givenPass, users[getIdByEmail(givenEmail)].password)) {
     return true;
   }
   return false;
@@ -143,7 +143,7 @@ const urlsForUser = (givenId) => {
 
 //greetings!
 app.get("/", (req, res) => {
-  res.end("Hello!");
+  res.redirect("Hello!");
 });
 
 
@@ -186,9 +186,9 @@ app.post("/register", (req, res) => {
     password: bcrypt.hashSync(req.body.password, 10),
   };
   users[newUser.id] = newUser;
-  console.log(users);
   res.cookie("user_id", newUser.id);
   res.redirect("/urls");
+  return;
   } else {
     res.status(400).send('Both password and email fields must be filled out');
   }
@@ -217,7 +217,7 @@ app.post("/login", (req, res) => {
     return;
   } else {
     res.cookie("user_id", id);
-    res.redirect("/");
+    res.redirect("/urls");
   }
 });
 
@@ -245,6 +245,7 @@ app.post("/urls/:id/delete", (req, res) => {
   if (urlDatabase[req.params.id].user_id === req.cookies["user_id"]) {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
+  return;
   } else {
     res.status(400).send('You do not have permission to delete that URL');
   }
@@ -271,6 +272,7 @@ app.post("/urls/:id", (req, res) => {
   let longURL = addProtocol(req.body.longURL);
   urlDatabase[req.params.id].url = longURL;
   res.redirect("/urls");
+  return;
   } else {
     res.status(400).send('You do not have permission to edit that URL');
   }
