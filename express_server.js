@@ -12,17 +12,19 @@
 
 const express = require("express");
 const app = express();
-const PORT = process.env.PORT || 8080; // default port 8080
+// default port 8080
+const PORT = process.env.PORT || 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-
-app.use(bodyParser.urlencoded({extended: true})); //allows us to access POST request parameters
+//allows us to access POST request parameters
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
-  user_id: 'session',
-  keys: ['doggos', 'bork'],
+  userId: 'session',
+  keys: ['doggos', 'bork']
 }));
-app.set("view engine", "ejs"); //tells the express app to use EJS as its templating engine
+//tells the express app to use EJS as its templating engine
+app.set("view engine", "ejs");
 
 
 
@@ -38,12 +40,12 @@ app.set("view engine", "ejs"); //tells the express app to use EJS as its templat
 const urlDatabase = {
   "b2xVn2": {
     url: "http://www.lighthouselabs.ca",
-    user_id: "userRandomID"
+    userId: "userRandomID"
   },
   "9sm5xK": {
     url: "http://www.google.com",
-    user_id: "userRandomID"
-  },
+    userId: "userRandomID"
+  }
 };
 
 
@@ -55,7 +57,7 @@ const users = {
     id: "userRandomID",
     email: "user@example.com",
     password: bcrypt.hashSync("foo", 10)
-  },
+  }
 };
 
 
@@ -71,9 +73,9 @@ const users = {
 //gets a userEmail by the id, returns null if user id not found
 const getUserEmailById = (userID) => {
   let user = users[userID];
-    if (!user) {
-      return;
-    }
+  if (!user) {
+    return;
+  }
   return user.email;
 };
 
@@ -93,16 +95,16 @@ const addProtocol = (givenURL) => {
   let newUrl = givenURL;
   if (!/https?:\/\//.test(givenURL)) {
     if (!/www\./.test(givenURL)) {
-      newUrl = `www.${newUrl}`
+      newUrl = `www.${newUrl}`;
     }
-    newUrl = `https://${newUrl}`
-  };
+    newUrl = `https://${newUrl}`;
+  }
   return newUrl;
 };
 
 //used to generate our short urls randomly
 const generateRandomString = () => {
-  return Math.random().toString(36).substr(2,6);
+  return Math.random().toString(36).substr(2, 6);
 };
 
 //checks to see if an email already exists in our global users object
@@ -127,7 +129,7 @@ const checkPassword = (givenEmail, givenPass) => {
 const urlsForUser = (givenId) => {
   const output = {};
   for (url in urlDatabase) {
-    if (urlDatabase[url].user_id === givenId) {
+    if (urlDatabase[url].userId === givenId) {
       output[url] = urlDatabase[url];
     }
   }
@@ -146,20 +148,18 @@ const urlsForUser = (givenId) => {
 
 //greetings!
 app.get("/", (req, res) => {
-  res.redirect("Hello!");
+  if (!req.session.userId){
+    res.redirect("/login");
+    return;
+  } else {
+    res.redirect("/urls");
+  }
 });
 
 
-//page which presents the form for shortening a new url
-//if user is not logged in, they are redirected to /login
-app.get("/urls/new", (req, res) => {
-  let userEmail = getUserEmailById(req.session.user_id);
-  let templateVars = { userEmail: userEmail };
-  if (templateVars.userEmail === undefined) {
-    res.redirect("/login");
-    return;
-  }
-  res.render("urls_new", templateVars);
+//hey there
+app.get("/hello", (req, res) => {
+  res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 
@@ -169,44 +169,15 @@ app.get("/urls.json", (req, res) => {
 });
 
 
-//page with form for registering a new user
-app.get("/register", (req, res) => {
-  let userEmail = getUserEmailById(req.session.user_id);
-  let templateVars = { userEmail: userEmail };
-  res.render("register", templateVars);
-});
-
-
-//creates a new user in the global userobject (if the form is filled correctly)
-app.post("/register", (req, res) => {
-  if (checkUserEmail(req.body.email)) {
-    res.status(400).send('Email already exists');
-    return;
-  } else if (req.body.email && req.body.password) {
-  let newUser = {
-    id: generateRandomString(),
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 10),
-  };
-  users[newUser.id] = newUser;
-  req.session.user_id = newUser.id;
-  res.redirect("/urls");
-  return;
-  } else {
-    res.status(400).send('Both password and email fields must be filled out');
-  }
-});
-
-
 //page which presents the login form
 app.get("/login", (req, res) => {
-  let userEmail = getUserEmailById(req.session.user_id);
+  let userEmail = getUserEmailById(req.session.userId);
   let templateVars = { userEmail: userEmail };
   res.render("login", templateVars);
 });
 
 
-//creates user_id session once the login form is filled out
+//creates userId session once the login form is filled out
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -219,36 +190,111 @@ app.post("/login", (req, res) => {
     res.status(403).send('Sorry, email or password incorrect');
     return;
   } else {
-    req.session.user_id = id;
+    req.session.userId = id;
     res.redirect("/urls");
   }
 });
 
 
-// //deletes the user_id session (effectively loggin out the user)
+//deletes the userId session (effectively loggin out the user)
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
 
+//page with form for registering a new user
+app.get("/register", (req, res) => {
+  if (req.session.userId) {
+    res.redirect("/urls");
+    return;
+  } else {
+    let userEmail = getUserEmailById(req.session.userId);
+    let templateVars = { userEmail: userEmail };
+    res.render("register", templateVars);
+  }
+});
+
+
+//creates a new user in the global userobject (if the form is filled correctly)
+app.post("/register", (req, res) => {
+  if (checkUserEmail(req.body.email)) {
+    res.status(400).send('Email already exists');
+    return;
+  } else if (req.body.email && req.body.password) {
+    let newUser = {
+      id: generateRandomString(),
+      email: req.body.email,
+      password: bcrypt.hashSync(req.body.password, 10)
+    };
+    users[newUser.id] = newUser;
+    req.session.userId = newUser.id;
+    res.redirect("/urls");
+    return;
+  } else {
+    res.status(400).send('Both password and email fields must be filled out');
+  }
+});
+
+
+
+//page which presents the form for shortening a new url
+//if user is not logged in, they are redirected to /login
+app.get("/urls/new", (req, res) => {
+  let userEmail = getUserEmailById(req.session.userId);
+  let templateVars = { userEmail: userEmail };
+  if (templateVars.userEmail === undefined) {
+    res.redirect("/login");
+    return;
+  } else {
+    res.render("urls_new", templateVars);
+  }
+});
+
+
 //page which presents the full list of urls present in the urlDatabase at present time
 app.get("/urls", (req, res) => {
-  let userEmail = getUserEmailById(req.session.user_id);
+  let userEmail = getUserEmailById(req.session.userId);
+  //variables we can access in urls_index template
   let templateVars = {
-  userEmail: userEmail,
-  urls: urlsForUser(req.session.user_id),
-  }; //variables we can access in urls_index template
-  res.render("urls_index", templateVars);
+    userEmail: userEmail,
+    urls: urlsForUser(req.session.userId)
+  };
+  if (!req.session.userId) {
+    res.status(401).send('You are not logged in');
+  } else {
+    res.render("urls_index", templateVars);
+  }
+});
+
+
+//creates a new short url for a given long url, and stores these in urlDatabase
+app.post("/urls", (req, res) => {
+  if (!req.session.userId) {
+    res.status(401).send('You are not logged in');
+    return;
+  } else {
+    // store the long url from the form (urls/new)
+    let longURL = addProtocol(req.body.longURL);
+    // generate a short url using our function, and store it
+    const shortURL = generateRandomString();
+    // add this info into the urlDatabase object as new key value pairs
+    urlDatabase[shortURL] = {
+      url: longURL,
+      userId: req.session.userId
+    };
+    // redirect to urls/shorturl(id)
+    res.redirect(`urls/${shortURL}`);
+  }
 });
 
 
 //deletes a given long/shortURL pair from the urlDatabase
 app.post("/urls/:id/delete", (req, res) => {
-  if (urlDatabase[req.params.id].user_id === req.session.user_id) {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
-  return;
+  if (urlDatabase[req.params.id].userId === req.session.userId) {
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
+    return;
   } else {
     res.status(400).send('You do not have permission to delete that URL');
   }
@@ -258,51 +304,42 @@ app.post("/urls/:id/delete", (req, res) => {
 //id specific page for each short url
 //now also allows for user to update (explained in next routing, below)
 app.get("/urls/:id", (req, res) => {
+  //variables we can access in urls_show
   let templateVars = {
-    userEmail: getUserEmailById(req.session.user_id),
+    userEmail: getUserEmailById(req.session.userId),
     urls: urlDatabase,
     shortURL: req.params.id,
-    sessionID: req.session.user_id,
-  }; //variables we can access in urls_show
-  res.render("urls_show", templateVars);
+    sessionID: req.session.userId
+  };
+  if (urlDatabase[req.params.id] === undefined) {
+    res.status(404).send("Not Found");
+  } else {
+    res.render("urls_show", templateVars);
+  }
 });
 
 
 //resets a given short url to link to a new/different long url
 app.post("/urls/:id", (req, res) => {
-  if (urlDatabase[req.params.id].user_id === req.session.user_id) {
-  let longURL = addProtocol(req.body.longURL);
-  urlDatabase[req.params.id].url = longURL;
-  res.redirect("/urls");
-  return;
+  if (urlDatabase[req.params.id].userId === req.session.userId) {
+    let longURL = addProtocol(req.body.longURL);
+    urlDatabase[req.params.id].url = longURL;
+    res.redirect("/urls");
   } else {
     res.status(400).send('You do not have permission to edit that URL');
   }
 });
 
 
-//hey there
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-
-//creates a new short url for a given long url, and stores these in urlDatabase
-app.post("/urls", (req, res) => {
-  let longURL = addProtocol(req.body.longURL);  // store the long url from the form (urls/new)
-  const shortURL = generateRandomString();      // generate a short url using our function, and store it
-  urlDatabase[shortURL] = {
-    url: longURL,
-    user_id: req.session.user_id,
-  }                                         // add info into the urlDatabase object as a new key value pair
-  res.redirect(`urls/${shortURL}`);             // redirect to urls/shorturl(id)
-});
-
-
 //redirects users from short url to long (actual) url
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL].url;
-  res.redirect(longURL);
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).send("No URL exists for this ID");
+    return;
+  } else {
+    let longURL = urlDatabase[req.params.shortURL].url;
+    res.redirect(longURL);
+  }
 });
 
 
