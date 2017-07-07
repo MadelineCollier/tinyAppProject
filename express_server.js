@@ -50,7 +50,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "fuq"
+    password: "foo"
   },
 };
 
@@ -226,8 +226,7 @@ app.get("/urls", (req, res) => {
   let userEmail = getUserEmailById(req.cookies["user_id"]);
   let templateVars = {
   userEmail: userEmail,
-  urls: urlDatabase,
-  cookieID: req.cookies["user_id"],
+  urls: urlsForUser(req.cookies["user_id"]),
   }; //variables we can access in urls_index template
   res.render("urls_index", templateVars);
 });
