@@ -15,6 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true})); //allows us to access POST request parameters
 app.use(cookieParser());
@@ -182,9 +183,10 @@ app.post("/register", (req, res) => {
   let newUser = {
     id: generateRandomString(),
     email: req.body.email,
-    password: req.body.password
+    password: bcrypt.hashSync(req.body.password, 10),
   };
   users[newUser.id] = newUser;
+  console.log(users);
   res.cookie("user_id", newUser.id);
   res.redirect("/urls");
   } else {
